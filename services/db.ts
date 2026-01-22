@@ -1,104 +1,119 @@
-
+import { initializeApp, getApp, getApps } from "firebase/app";
+import { getDatabase, ref, onValue, push, remove, update, Database } from "firebase/database";
 import { MonsterLog, Flavor } from '../types';
 import { INITIAL_FLAVORS } from '../constants';
 
-const LOGS_KEY = 'monster_tracker_logs';
-const FLAVORS_KEY = 'monster_tracker_flavors';
-const DB_UPDATE_EVENT = 'monster_db_update';
+const firebaseConfig = {
+  apiKey: process.env.API_KEY, 
+  authDomain: "reubens-monster-tracker.firebaseapp.com",
+  databaseURL: "https://reubens-monster-tracker-default-rtdb.firebaseio.com",
+  projectId: "reubens-monster-tracker",
+  storageBucket: "reubens-monster-tracker.appspot.com",
+  messagingSenderId: "1234567890",
+  appId: "1:1234567890:web:abcdef"
+};
 
-class MockDB {
-  private notify() {
-    window.dispatchEvent(new CustomEvent(DB_UPDATE_EVENT));
+// Initialize Firebase safely
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+const fireDb: Database = getDatabase(app);
+
+class FirebaseDB {
+  private logs: MonsterLog[] = [];
+  private flavors: Flavor[] = [];
+  private connected: boolean = false;
+  private subscribers: Set<() => void> = new Set();
+
+  constructor() {
+    this.init();
   }
 
-  getLogs(): MonsterLog[] {
-    const data = localStorage.getItem(LOGS_KEY);
-    return data ? JSON.parse(data) : [];
-  }
+  private init() {
+    try {
+      // Monitor Connection Status
+      const connectedRef = ref(fireDb, '.info/connected');
+      onValue(connectedRef, (snap) => {
+        this.connected = snap.val() === true;
+        this.notify();
+      });
 
-  addLog(log: Omit<MonsterLog, 'id'>): string {
-    const logs = this.getLogs();
-    const newLog = { ...log, id: Math.random().toString(36).substr(2, 9) };
-    logs.unshift(newLog);
-    localStorage.setItem(LOGS_KEY, JSON.stringify(logs));
-    this.notify();
-    return newLog.id;
-  }
+      // Real-time Logs Sync
+      const logsRef = ref(fireDb, 'logs');
+      onValue(logsRef, (snapshot) => {
+        const data = snapshot.val();
+        this.logs = data ? Object.keys(data).map(key => ({ id: key, ...data[key] })) : [];
+        this.notify();
+      });
 
-  updateLog(id: string, updatedLog: Partial<MonsterLog>): void {
-    const logs = this.getLogs();
-    const index = logs.findIndex(l => l.id === id);
-    if (index !== -1) {
-      logs[index] = { ...logs[index], ...updatedLog };
-      localStorage.setItem(LOGS_KEY, JSON.stringify(logs));
-      this.notify();
+      // Real-time Flavors Sync
+      const flavorsRef = ref(fireDb, 'flavors');
+      onValue(flavorsRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          this.flavors = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+        } else {
+          this.seedFlavors();
+        }
+        this.notify();
+      });
+    } catch (error) {
+      console.error("Firebase Database Initialization Error:", error);
     }
   }
 
-  deleteLog(id: string): void {
-    const logs = this.getLogs();
-    const filtered = logs.filter(l => l.id !== id);
-    localStorage.setItem(LOGS_KEY, JSON.stringify(filtered));
-    this.notify();
-  }
-
-  getFlavors(): Flavor[] {
-    const data = localStorage.getItem(FLAVORS_KEY);
-    if (!data) {
-      const initial = INITIAL_FLAVORS.map(name => ({
-        id: Math.random().toString(36).substr(2, 9),
-        name,
-        isCustom: false
-      }));
-      localStorage.setItem(FLAVORS_KEY, JSON.stringify(initial));
-      return initial;
-    }
-    return JSON.parse(data);
-  }
-
-  addFlavor(name: string): void {
-    const flavors = this.getFlavors();
-    if (flavors.some(f => f.name.toLowerCase() === name.toLowerCase())) return;
-    
-    flavors.push({
-      id: Math.random().toString(36).substr(2, 9),
-      name,
-      isCustom: true
+  private seedFlavors() {
+    const flavorsRef = ref(fireDb, 'flavors');
+    INITIAL_FLAVORS.forEach(name => {
+      push(flavorsRef, { name, isCustom: false });
     });
-    localStorage.setItem(FLAVORS_KEY, JSON.stringify(flavors));
-    this.notify();
   }
 
-  updateFlavor(id: string, newName: string): void {
-    const flavors = this.getFlavors();
-    const index = flavors.findIndex(f => f.id === id);
-    if (index !== -1) {
-      const oldName = flavors[index].name;
-      flavors[index].name = newName;
-      localStorage.setItem(FLAVORS_KEY, JSON.stringify(flavors));
-
-      // Cascade update to all logs that use this flavor name
-      const logs = this.getLogs();
-      const updatedLogs = logs.map(log => 
-        log.flavor === oldName ? { ...log, flavor: newName } : log
-      );
-      localStorage.setItem(LOGS_KEY, JSON.stringify(updatedLogs));
-      
-      this.notify();
-    }
+  private notify() {
+    this.subscribers.forEach(cb => cb());
   }
 
-  deleteFlavor(id: string): void {
-    const flavors = this.getFlavors();
-    const filtered = flavors.filter(f => f.id !== id);
-    localStorage.setItem(FLAVORS_KEY, JSON.stringify(filtered));
-    this.notify();
+  // API Methods
+  getLogs() { return this.logs; }
+  getFlavors() { return this.flavors; }
+  isConnected() { return this.connected; }
+
+  addLog(log: Omit<MonsterLog, 'id'>) {
+    push(ref(fireDb, 'logs'), log);
+  }
+
+  deleteLog(id: string) {
+    remove(ref(fireDb, `logs/${id}`));
+  }
+
+  updateLog(id: string, log: Partial<MonsterLog>) {
+    update(ref(fireDb, `logs/${id}`), log);
+  }
+
+  addFlavor(name: string) {
+    push(ref(fireDb, 'flavors'), { name, isCustom: true });
+  }
+
+  updateFlavor(id: string, newName: string) {
+    const oldFlavor = this.flavors.find(f => f.id === id);
+    if (!oldFlavor) return;
+    
+    update(ref(fireDb, `flavors/${id}`), { name: newName });
+    
+    // Cascade update to logs using this flavor
+    this.logs.forEach(log => {
+      if (log.flavor === oldFlavor.name) {
+        update(ref(fireDb, `logs/${log.id}`), { flavor: newName });
+      }
+    });
+  }
+
+  deleteFlavor(id: string) {
+    remove(ref(fireDb, `flavors/${id}`));
   }
 
   subscribe(callback: () => void) {
-    window.addEventListener(DB_UPDATE_EVENT, callback);
-    return () => window.removeEventListener(DB_UPDATE_EVENT, callback);
+    this.subscribers.add(callback);
+    return () => this.subscribers.delete(callback);
   }
 }
 
-export const db = new MockDB();
+export const db = new FirebaseDB();

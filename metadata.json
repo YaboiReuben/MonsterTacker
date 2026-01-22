@@ -1,5 +1,5 @@
 {
-  "name": "Reuben's Monster Tracker",
-  "description": "Vanilla JS energy drink tracker for Cloudflare Pages.",
+  "name": "Reuben's Monster Tracker (Realtime)",
+  "description": "High-performance vanilla JS tracker with Firebase Realtime Database integration.",
   "requestFramePermissions": []
 }

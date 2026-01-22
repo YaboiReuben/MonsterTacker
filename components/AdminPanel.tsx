@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { db } from '../services/db';
 import { Flavor, MonsterLog } from '../types';
@@ -50,12 +49,23 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, flavors, logs }) => {
     setEditingFlavorId(null);
   };
 
+  const handleDeleteLog = (id: string) => {
+    if (window.confirm('Reuben, are you sure you want to delete this log? It will be gone forever for everyone.')) {
+      db.deleteLog(id);
+    }
+  };
+
   const handleEditLog = (log: MonsterLog) => {
     setEditingLogId(log.id);
     setFlavor(log.flavor);
     setDatetime(new Date(log.timestamp).toISOString().slice(0, 16));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  // Sort logs by date (newest first)
+  const sortedAdminLogs = [...logs].sort((a, b) => 
+    new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  );
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/95 backdrop-blur-md animate-in slide-in-from-bottom duration-300">
@@ -154,15 +164,15 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, flavors, logs }) => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-800/50">
-                    {logs.map(log => (
+                    {sortedAdminLogs.map(log => (
                       <tr key={log.id} className="hover:bg-zinc-800/10 transition-colors group">
                         <td className="p-5 font-bold text-zinc-200">{log.flavor}</td>
                         <td className="p-5 text-sm text-zinc-500 font-mono">
                           {new Date(log.timestamp).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
                         </td>
                         <td className="p-5 text-right space-x-2">
-                          <button onClick={() => handleEditLog(log)} className="p-2 text-zinc-500 hover:text-[#71BE44]"><i className="fa-solid fa-pen-to-square"></i></button>
-                          <button onClick={() => db.deleteLog(log.id)} className="p-2 text-zinc-500 hover:text-red-500"><i className="fa-solid fa-trash"></i></button>
+                          <button onClick={() => handleEditLog(log)} className="p-2 text-zinc-500 hover:text-[#71BE44]" title="Edit Entry"><i className="fa-solid fa-pen-to-square"></i></button>
+                          <button onClick={() => handleDeleteLog(log.id)} className="p-2 text-zinc-500 hover:text-red-500" title="Delete Entry"><i className="fa-solid fa-trash"></i></button>
                         </td>
                       </tr>
                     ))}
@@ -195,7 +205,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, flavors, logs }) => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-800/50">
-                    {flavors.map(f => (
+                    {[...flavors].sort((a,b) => a.name.localeCompare(b.name)).map(f => (
                       <tr key={f.id} className="hover:bg-zinc-800/10 transition-colors">
                         <td className="p-5">
                           {editingFlavorId === f.id ? (
@@ -223,7 +233,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose, flavors, logs }) => {
                           >
                             <i className="fa-solid fa-spell-check"></i>
                           </button>
-                          <button onClick={() => { if(confirm('Delete this flavor and its history?')) db.deleteFlavor(f.id) }} className="p-2 text-zinc-500 hover:text-red-500">
+                          <button onClick={() => { if(confirm('Delete this flavor from the library? Historical logs will not be affected.')) db.deleteFlavor(f.id) }} className="p-2 text-zinc-500 hover:text-red-500" title="Delete Flavor">
                             <i className="fa-solid fa-trash-can"></i>
                           </button>
                         </td>

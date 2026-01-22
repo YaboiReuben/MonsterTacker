@@ -1,5 +1,5 @@
 {
-  "name": "reuben's-monster-tracker",
+  "name": "reuben's-monster-tracker-(realtime)",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "react": "^19.2.3",
-    "@google/genai": "^1.38.0",
+    "react-dom": "^19.2.3",
     "firebase": "^12.8.0"
   },
   "devDependencies": {
