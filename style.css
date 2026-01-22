@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;700&display=swap');
 
 body {
     background-color: #000000;
@@ -19,32 +19,6 @@ body {
     box-shadow: 0 0 15px rgba(113, 190, 68, 0.1);
 }
 
-.monster-card {
-    background: #09090b;
-    border: 1px solid #18181b;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.monster-card:hover {
-    border-color: #71BE44;
-    transform: translateY(-4px);
-    box-shadow: 0 10px 30px -10px rgba(113, 190, 68, 0.3);
-}
-
-.custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-    background: #09090b;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #27272a;
-    border-radius: 10px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #71BE44;
-}
-
 select {
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2371BE44'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
@@ -56,4 +30,14 @@ select {
 input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     filter: invert(1);
     opacity: 0.5;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+#monster-feed > div {
+    animation: fadeIn 0.5s ease forwards;
 }

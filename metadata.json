@@ -1,5 +1,5 @@
 {
-  "name": "Reuben's Monster Tracker (Realtime)",
-  "description": "High-performance vanilla JS tracker with Firebase Realtime Database integration.",
+  "name": "Reuben's Monster Tracker (Vanilla Realtime)",
+  "description": "High-performance Vanilla JS tracker using Firebase Realtime Database.",
   "requestFramePermissions": []
 }
