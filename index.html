@@ -12,7 +12,10 @@
   "imports": {
     "react": "https://esm.sh/react@^19.2.3",
     "react/": "https://esm.sh/react@^19.2.3/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.38.0"
+    "@google/genai": "https://esm.sh/@google/genai@^1.38.0",
+    "firebase/app": "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js",
+    "firebase/database": "https://www.gstatic.com/firebasejs/11.3.1/firebase-database.js",
+    "firebase/": "https://esm.sh/firebase@^12.8.0/"
   }
 }
 </script>
@@ -46,8 +49,8 @@
             <div>
                 <h2 class="text-3xl font-monster text-white neon-text uppercase">Consumption Feed</h2>
                 <div class="flex items-center gap-2 mt-1">
-                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                    <p class="text-zinc-500 text-sm">Real-time sync active</p>
+                    <span id="sync-status-dot" class="w-2 h-2 bg-zinc-700 rounded-full"></span>
+                    <p id="sync-status-text" class="text-zinc-500 text-sm">Connecting to Firebase...</p>
                 </div>
             </div>
             <div class="bg-zinc-900 border border-zinc-800 px-6 py-3 rounded-full">
@@ -82,7 +85,7 @@
                 <div class="w-8 h-8 bg-[#71BE44] rounded flex items-center justify-center text-black font-black">M</div>
                 <p>Reuben's Monster Tracker</p>
             </div>
-            <p><i class="fa-solid fa-database mr-2"></i>Persistence: LocalStorage (Simulated Realtime)</p>
+            <p><i class="fa-solid fa-database mr-2"></i>Realtime: Firebase Database Active</p>
         </div>
     </footer>
 
