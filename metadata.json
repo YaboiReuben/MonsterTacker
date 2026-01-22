@@ -1,5 +1,5 @@
 {
   "name": "Reuben's Monster Tracker",
-  "description": "A high-performance energy drink tracking application with real-time updates and a hidden admin panel for managing flavors and consumption logs.",
+  "description": "Vanilla JS energy drink tracker for Cloudflare Pages.",
   "requestFramePermissions": []
 }

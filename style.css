@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap');
+
+body {
+    background-color: #000000;
+    color: #ffffff;
+    font-family: 'Inter', sans-serif;
+}
+
+.font-monster {
+    font-family: 'Orbitron', sans-serif;
+}
+
+.neon-text {
+    text-shadow: 0 0 10px rgba(113, 190, 68, 0.7);
+}
+
+.neon-border {
+    box-shadow: 0 0 15px rgba(113, 190, 68, 0.2);
+}
+
+.monster-card {
+    background: #09090b;
+    border: 1px solid #18181b;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.monster-card:hover {
+    border-color: #71BE44;
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px -10px rgba(113, 190, 68, 0.3);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #000;
+}
+::-webkit-scrollbar-thumb {
+    background: #222;
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #71BE44;
+}
+
+select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2371BE44'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1.5em;
+}

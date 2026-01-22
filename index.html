@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,56 +6,145 @@
     <title>Reuben's Monster Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap');
-        
-        body {
-            background-color: #000000;
-            color: #ffffff;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .font-monster {
-            font-family: 'Orbitron', sans-serif;
-        }
-
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #111;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #71BE44;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #5a9b36;
-        }
-
-        /* Neon Glow Effect */
-        .neon-text {
-            text-shadow: 0 0 10px rgba(113, 190, 68, 0.7);
-        }
-        .neon-border {
-            box-shadow: 0 0 15px rgba(113, 190, 68, 0.3);
-        }
-        .neon-btn:hover {
-            box-shadow: 0 0 20px rgba(113, 190, 68, 0.6);
-        }
-    </style>
+    <link rel="stylesheet" href="./style.css">
 <script type="importmap">
 {
   "imports": {
-    "react/": "https://esm.sh/react@^19.2.3/",
     "react": "https://esm.sh/react@^19.2.3",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.38.0"
   }
 }
 </script>
 </head>
-<body>
-    <div id="root"></div>
+<body class="bg-black text-white font-sans antialiased">
+    <header class="bg-zinc-950 border-b border-zinc-900 sticky top-0 z-40 backdrop-blur-md bg-opacity-80">
+        <div class="max-w-7xl w-full mx-auto px-4 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div id="logo-trigger" class="group relative cursor-pointer select-none">
+                    <div class="w-12 h-12 bg-black border-2 border-[#71BE44] rounded-xl flex items-center justify-center transform transition-transform group-active:scale-95 neon-border">
+                        <i class="fa-solid fa-bolt-lightning text-[#71BE44] text-2xl group-hover:animate-pulse"></i>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-monster font-black text-white leading-none uppercase tracking-tighter">
+                        Reuben's <span class="text-[#71BE44]">Monster</span> Tracker
+                    </h1>
+                    <p class="text-[10px] md:text-xs text-zinc-500 uppercase tracking-widest mt-1">Track every Monster you've had</p>
+                </div>
+            </div>
+            <div id="admin-indicator" class="hidden">
+                <button id="open-admin-btn" class="bg-[#71BE44]/10 border border-[#71BE44]/30 text-[#71BE44] px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-[#71BE44]/20 transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-user-shield"></i> Admin Panel
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl w-full mx-auto px-4 py-12">
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
+            <div>
+                <h2 class="text-3xl font-monster text-white neon-text uppercase">Consumption Feed</h2>
+                <div class="flex items-center gap-2 mt-1">
+                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    <p class="text-zinc-500 text-sm">Real-time sync active</p>
+                </div>
+            </div>
+            <div class="bg-zinc-900 border border-zinc-800 px-6 py-3 rounded-full">
+                <span class="text-zinc-500 text-xs uppercase font-bold mr-2">Total Consumed:</span>
+                <span id="monster-count" class="font-monster text-2xl text-[#71BE44]">0</span>
+            </div>
+        </div>
+
+        <div id="monster-feed" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Monster cards will be injected here -->
+        </div>
+
+        <div id="empty-state" class="hidden flex flex-col items-center justify-center py-20 text-center">
+            <div class="w-24 h-24 bg-zinc-900 rounded-full flex items-center justify-center mb-6 border border-zinc-800">
+                <i class="fa-solid fa-mug-hot text-4xl text-zinc-700"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-zinc-300">No Monsters Tracked Yet</h3>
+            <p class="text-zinc-500 mt-2">Waiting for Reuben to crack open a cold one.</p>
+        </div>
+
+        <div class="mt-20 text-center">
+            <button id="ai-insight-btn" class="bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 px-8 py-4 rounded-2xl text-[#71BE44] font-bold transition-all flex items-center gap-3 mx-auto">
+                <i class="fa-solid fa-brain"></i> Generate AI Consumption Report
+            </button>
+            <div id="ai-output" class="hidden mt-6 p-6 bg-zinc-900 border border-zinc-800 rounded-3xl max-w-2xl mx-auto text-left text-zinc-400 italic leading-relaxed"></div>
+        </div>
+    </main>
+
+    <footer class="border-t border-zinc-900 py-10 mt-20">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6 text-zinc-600 text-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-[#71BE44] rounded flex items-center justify-center text-black font-black">M</div>
+                <p>Reuben's Monster Tracker</p>
+            </div>
+            <p><i class="fa-solid fa-database mr-2"></i>Persistence: LocalStorage (Simulated Realtime)</p>
+        </div>
+    </footer>
+
+    <!-- Password Modal -->
+    <div id="password-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
+        <div class="bg-zinc-900 border-2 border-[#71BE44] w-full max-w-sm p-8 rounded-[2rem] text-center">
+            <i class="fa-solid fa-user-secret text-[#71BE44] text-4xl mb-4"></i>
+            <h2 class="font-monster text-white text-xl uppercase mb-6">Identify Yourself</h2>
+            <input type="password" id="admin-pass" placeholder="Password" class="w-full bg-black border border-zinc-800 rounded-xl p-4 text-white text-center mb-4 outline-none focus:border-[#71BE44]">
+            <div class="flex flex-col gap-2">
+                <button id="auth-btn" class="bg-[#71BE44] text-black font-black py-4 rounded-xl">AUTHORIZE</button>
+                <button id="close-pass-btn" class="text-zinc-500 text-xs py-2">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="admin-panel" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/95 backdrop-blur-md p-4">
+        <div class="max-w-5xl mx-auto bg-zinc-900 border border-zinc-800 rounded-[2.5rem] p-8 relative mt-10">
+            <button id="close-admin-btn" class="absolute top-6 right-6 text-zinc-500 hover:text-white"><i class="fa-solid fa-xmark text-2xl"></i></button>
+            
+            <header class="mb-10">
+                <span class="bg-[#71BE44] text-black text-[10px] font-black px-2 py-0.5 rounded uppercase">Master Control</span>
+                <h2 class="text-3xl font-monster text-white mt-2">DASHBOARD</h2>
+            </header>
+
+            <div class="grid lg:grid-cols-2 gap-10">
+                <div class="space-y-6">
+                    <div class="bg-zinc-800/50 p-6 rounded-3xl border border-zinc-800">
+                        <h3 class="text-[#71BE44] font-bold uppercase text-sm mb-4">Log New Entry</h3>
+                        <div class="space-y-4">
+                            <select id="flavor-select" class="w-full bg-black border border-zinc-700 rounded-xl p-4 text-white"></select>
+                            <input type="datetime-local" id="log-time" class="w-full bg-black border border-zinc-700 rounded-xl p-4 text-white">
+                            <button id="submit-log-btn" class="w-full bg-[#71BE44] text-black font-black py-4 rounded-xl">LOG MONSTER</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-zinc-800/50 p-6 rounded-3xl border border-zinc-800">
+                        <h3 class="text-[#71BE44] font-bold uppercase text-sm mb-4">Add New Flavor</h3>
+                        <div class="flex gap-2">
+                            <input type="text" id="new-flavor-input" placeholder="Flavor Name" class="flex-1 bg-black border border-zinc-700 rounded-xl p-4 text-white">
+                            <button id="add-flavor-btn" class="bg-[#71BE44] text-black font-black px-6 rounded-xl">ADD</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-black/30 rounded-3xl border border-zinc-800 overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead class="bg-zinc-900 border-b border-zinc-800 text-[10px] text-zinc-500 uppercase font-black">
+                            <tr>
+                                <th class="p-4">Flavor</th>
+                                <th class="p-4">Date</th>
+                                <th class="p-4 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logs-table-body" class="text-sm"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="./script.js"></script>
 </body>
 </html>
